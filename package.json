@@ -1,0 +1,33 @@
+{
+  "name": "mitmproxy-node",
+  "version": "1.0.0",
+  "description": "NodeJS mitmproxy adapter.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://jvilk@bitbucket.org/jvilk/mitmproxy-node.git"
+  },
+  "keywords": [
+    "proxy",
+    "mitm",
+    "rewriting",
+    "man-in-the-middle",
+    "transparent",
+    "proxy"
+  ],
+  "author": "John Vilk <jvilk@cs.umass.edu>",
+  "license": "MIT",
+  "homepage": "https://bitbucket.org/jvilk/mitmproxy-node#readme",
+  "dependencies": {
+    "@types/node": "^7.0.44",
+    "@types/ws": "^3.2.0",
+    "ws": "^3.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^2.5.3"
+  }
+}
