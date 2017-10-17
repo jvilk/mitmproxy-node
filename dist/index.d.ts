@@ -107,6 +107,15 @@ export declare class InterceptedHTTPMessage {
      */
     toBuffer(): Buffer;
 }
+export declare class CachedItem {
+    readonly rawUrl: string;
+    readonly mimeType: string;
+    readonly data: Buffer;
+    constructor(rawUrl: string, mimeType: string, data: Buffer);
+    readonly shortMimeType: string;
+    readonly isHtml: boolean;
+    readonly isJavaScript: boolean;
+}
 /**
  * Class that launches MITM proxy and talks to it via WebSockets.
  */
@@ -129,8 +138,8 @@ export default class MITMProxy {
      * Retrieves the given URL from the cache.
      * @param url
      */
-    getFromCache(url: string): Buffer;
-    forEachCacheItem(cb: (value: Buffer, url: string) => void): void;
+    getFromCache(url: string): CachedItem;
+    forEachCacheItem(cb: (value: CachedItem, url: string) => void): void;
     /**
      * Requests the given URL from the proxy.
      */

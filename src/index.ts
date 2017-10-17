@@ -289,6 +289,37 @@ export class InterceptedHTTPMessage {
   }
 }
 
+export class CachedItem {
+  constructor(
+    public readonly rawUrl: string,
+    public readonly mimeType: string,
+    public readonly data: Buffer) {}
+
+  public get shortMimeType(): string {
+    let mime = this.mimeType.toLowerCase();
+    if (mime.indexOf(";") !== -1) {
+      mime = mime.slice(0, mime.indexOf(";"));
+    }
+    return mime;
+  }
+
+  public get isHtml(): boolean {
+    return this.shortMimeType === "text/html";
+  }
+
+  public get isJavaScript(): boolean {
+    switch(this.shortMimeType) {
+      case 'text/javascript':
+      case 'application/javascript':
+      case 'text/x-javascript':
+      case 'application/x-javascript':
+        return true;
+      default:
+        return false;
+    }
+  }
+}
+
 /**
  * Class that launches MITM proxy and talks to it via WebSockets.
  */
@@ -363,7 +394,7 @@ export default class MITMProxy {
   private _mitmError: Error = null;
   private _wss: WebSocketServer = null;
   public cb: Interceptor;
-  private _cache = new Map<string, Buffer>();
+  private _cache = new Map<string, CachedItem>();
 
   private constructor(cb: Interceptor) {
     this.cb = cb;
@@ -377,7 +408,8 @@ export default class MITMProxy {
         this.cb(original);
         // Remove transfer-encoding. We don't support chunked.
         if (this._cacheEnabled) {
-          this._cache.set(original.request.rawUrl, original.responseBody);
+          this._cache.set(original.request.rawUrl,
+            new CachedItem(original.request.rawUrl, original.response.getHeader('content-type'), original.responseBody));
         }
         ws.send(original.toBuffer());
       });
@@ -408,11 +440,11 @@ export default class MITMProxy {
    * Retrieves the given URL from the cache.
    * @param url
    */
-  public getFromCache(url: string): Buffer {
+  public getFromCache(url: string): CachedItem {
     return this._cache.get(url);
   }
 
-  public forEachCacheItem(cb: (value: Buffer, url: string) => void): void {
+  public forEachCacheItem(cb: (value: CachedItem, url: string) => void): void {
     this._cache.forEach(cb);
   }
 
