@@ -17,8 +17,7 @@
     "mitm",
     "rewriting",
     "man-in-the-middle",
-    "transparent",
-    "proxy"
+    "transparent"
   ],
   "author": "John Vilk <jvilk@cs.umass.edu>",
   "license": "MIT",

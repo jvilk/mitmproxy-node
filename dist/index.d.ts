@@ -107,7 +107,7 @@ export declare class InterceptedHTTPMessage {
      */
     toBuffer(): Buffer;
 }
-export declare class CachedItem {
+export declare class StashedItem {
     readonly rawUrl: string;
     readonly mimeType: string;
     readonly data: Buffer;
@@ -124,22 +124,22 @@ export default class MITMProxy {
     static Create(cb?: Interceptor): Promise<MITMProxy>;
     private static _cleanupCalled;
     private static _cleanup();
-    private _cacheEnabled;
-    cacheEnabled: boolean;
+    private _stashEnabled;
+    stashEnabled: boolean;
     private _mitmProcess;
     private _mitmError;
     private _wss;
     cb: Interceptor;
-    private _cache;
+    private _stash;
     private constructor();
     private _initializeWSS(wss);
     private _initializeMITMProxy(mitmProxy);
     /**
-     * Retrieves the given URL from the cache.
+     * Retrieves the given URL from the stash.
      * @param url
      */
-    getFromCache(url: string): CachedItem;
-    forEachCacheItem(cb: (value: CachedItem, url: string) => void): void;
+    getFromStash(url: string): StashedItem;
+    forEachStashItem(cb: (value: StashedItem, url: string) => void): void;
     /**
      * Requests the given URL from the proxy.
      */
