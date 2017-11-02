@@ -289,7 +289,7 @@ export class InterceptedHTTPMessage {
   }
 }
 
-export class CachedItem {
+export class StashedItem {
   constructor(
     public readonly rawUrl: string,
     public readonly mimeType: string,
@@ -351,6 +351,7 @@ export default class MITMProxy {
     } catch (e) {
       console.log(`MITMProxy not running; starting up mitmproxy.`);
       // Start up MITM process.
+      // --anticache means to disable caching, which gets in the way of transparently rewriting content.
       const mitmProcess = spawn("mitmdump", ["--anticache", "-s", resolve(__dirname, "../scripts/proxy.py")], {
         stdio: 'inherit'
       });
@@ -378,23 +379,23 @@ export default class MITMProxy {
     });
   }
 
-  private _cacheEnabled: boolean = false;
-  // Toggle whether or not MITMProxy caches unadulterated server responses.
-  // Not used for performance, but enables Node.js code to fetch previous server responses from the proxy.
-  public get cacheEnabled(): boolean {
-    return this._cacheEnabled;
+  private _stashEnabled: boolean = false;
+  // Toggle whether or not mitmproxy-node stashes modified server responses.
+  // **Not used for performance**, but enables Node.js code to fetch previous server responses from the proxy.
+  public get stashEnabled(): boolean {
+    return this._stashEnabled;
   }
-  public set cacheEnabled(v: boolean) {
+  public set stashEnabled(v: boolean) {
     if (!v) {
-      this._cache.clear();
+      this._stash.clear();
     }
-    this._cacheEnabled = v;
+    this._stashEnabled = v;
   }
   private _mitmProcess: ChildProcess = null;
   private _mitmError: Error = null;
   private _wss: WebSocketServer = null;
   public cb: Interceptor;
-  private _cache = new Map<string, CachedItem>();
+  private _stash = new Map<string, StashedItem>();
 
   private constructor(cb: Interceptor) {
     this.cb = cb;
@@ -407,9 +408,9 @@ export default class MITMProxy {
         const original = InterceptedHTTPMessage.FromBuffer(message);
         this.cb(original);
         // Remove transfer-encoding. We don't support chunked.
-        if (this._cacheEnabled) {
-          this._cache.set(original.request.rawUrl,
-            new CachedItem(original.request.rawUrl, original.response.getHeader('content-type'), original.responseBody));
+        if (this._stashEnabled) {
+          this._stash.set(original.request.rawUrl,
+            new StashedItem(original.request.rawUrl, original.response.getHeader('content-type'), original.responseBody));
         }
         ws.send(original.toBuffer());
       });
@@ -437,15 +438,15 @@ export default class MITMProxy {
   }
 
   /**
-   * Retrieves the given URL from the cache.
+   * Retrieves the given URL from the stash.
    * @param url
    */
-  public getFromCache(url: string): CachedItem {
-    return this._cache.get(url);
+  public getFromStash(url: string): StashedItem {
+    return this._stash.get(url);
   }
 
-  public forEachCacheItem(cb: (value: CachedItem, url: string) => void): void {
-    this._cache.forEach(cb);
+  public forEachStashItem(cb: (value: StashedItem, url: string) => void): void {
+    this._stash.forEach(cb);
   }
 
   /**

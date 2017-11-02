@@ -1,5 +1,5 @@
 {
-  "name": "mitmproxy-node",
+  "name": "mitmproxy",
   "version": "1.0.0",
   "description": "NodeJS mitmproxy adapter.",
   "main": "dist/index.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://jvilk@bitbucket.org/jvilk/mitmproxy-node.git"
+    "url": "https://github.com/jvilk/mitmproxy-node.git"
   },
   "keywords": [
     "proxy",

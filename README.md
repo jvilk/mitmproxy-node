@@ -15,7 +15,7 @@ If you want to add additional functionality, such as filtering or whatnot, I'll 
 
 ## How does it work?
 
-A Python plugin for mitmproxy starts a websocket server
+A Python plugin for `mitmproxy` starts a WebSocket server, and `mitmproxy-node` talks with it over WebSocket messages. The two communicate via binary messages to reduce marshaling-related overhead.
 
 ## Your Python plugin is bad and you should feel bad
 

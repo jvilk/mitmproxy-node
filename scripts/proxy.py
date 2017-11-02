@@ -39,13 +39,11 @@ class WebSocketAdapter:
         Main function of the websocket thread. Runs the websocket event loop
         until MITMProxy shuts down.
         """
-        #print("Starting websocket thread")
         self.event_loop.run_until_complete(self.websocket_loop())
 
     def __init__(self):
         self.event_loop = asyncio.get_event_loop()
         self.queue = queue.Queue()
-        # self.log = mitmproxy.ctx.log
         # Start websocket thread
         threading.Thread(target=self.websocket_thread).start()
 
@@ -106,7 +104,7 @@ class WebSocketAdapter:
         }, convert_body_to_bytes(request.content), convert_body_to_bytes(response.content))
 
         if message_response is None:
-            print("No response received; making no modifications")
+            # No response received; making no modifications.
             return
 
         new_metadata = message_response[0]
@@ -120,7 +118,6 @@ class WebSocketAdapter:
             new_body,
             map(convert_headers_to_bytes, new_metadata['headers'])
         )
-        print("Responding.")
         return
 
     def done(self):
@@ -138,22 +135,16 @@ class WebSocketAdapter:
         while True:
             try:
                 async with websockets.connect('ws://localhost:8765', max_size = None) as websocket:
-                    print("[WS] connected to server")
                     while True:
-                        print("[WS] waiting...")
                         # Make sure connection is still live.
                         await websocket.ping()
                         try:
                             obj = self.queue.get(timeout=1)
                             if obj is None:
                                 break
-                            print("[WS] Got item!")
                             try:
                                 obj['lock'].acquire()
-                                #print("[WS] Acquiring lock...")
-                                #print("[WS] Sending message...")
                                 await websocket.send(obj['msg'])
-                                print("[WS] Waiting for response...")
                                 obj['response'] = await websocket.recv()
                             finally:
                                 # Always remember to wake up other thread + release lock to avoid deadlocks
@@ -162,13 +153,13 @@ class WebSocketAdapter:
                         except queue.Empty:
                             pass
             except websockets.exceptions.ConnectionClosed:
-                print("[WS] disconnected from server")
+                # disconnected from server
+                pass
             except OSError:
                 # Connect failed
                 pass
             except:
-                # print("[WS] Error, waiting before retrying connect...")
-                print("[WS] Unexpected error:", sys.exc_info())
+                print("[mitmproxy-node plugin] Unexpected error:", sys.exc_info())
                 traceback.print_exc(file=sys.stdout)
 
 def start():
