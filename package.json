@@ -22,7 +22,7 @@
   ],
   "author": "John Vilk <jvilk@cs.umass.edu>",
   "license": "MIT",
-  "homepage": "https://bitbucket.org/jvilk/mitmproxy-node#readme",
+  "homepage": "https://github.com/jvilk/mitmproxy-node",
   "dependencies": {
     "@types/node": "^7.0.44",
     "@types/ws": "^3.2.0",
