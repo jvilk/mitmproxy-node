@@ -1,9 +1,9 @@
 from setuptools import setup
 
-setup(name='bleak-proxy',
-      version='0.1',
-      description='MITM proxy for BLeak',
-      url='http://github.com/jvilk/bleak',
+setup(name='node-mitmproxy',
+      version='1.0',
+      description='MITMProxy plugin for Node',
+      url='http://github.com/jvilk/mitmproxy',
       author='John Vilk',
       author_email='jvilk@cs.umass.edu',
       license='MIT',

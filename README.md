@@ -1,4 +1,4 @@
-# mitmproxy-node
+# mitmproxy-node 1.1
 
 A bridge between Python's [`mitmproxy`](https://mitmproxy.org/) and Node.JS programs. Rewrite network requests using Node.JS!
 
@@ -24,9 +24,8 @@ I have no idea what I am doing. PRs to improve my Python code are appreciated!
 ## Pre-requisites
 
 * [`mitmproxy`](https://mitmproxy.org/) must be installed and runnable from the terminal. Tested with 2.0.2.
-* Python 3.5, since I use the new async/await syntax in the mitmproxy plugin
-* `cd scripts; python setup.py install`
-* `npm install` to pull in Node dependencies.
+* Python 3.6, since I use the new async/await syntax in the mitmproxy plugin
+* `npm install` to pull in Node and PIP dependencies.
 
 ## Using
 
