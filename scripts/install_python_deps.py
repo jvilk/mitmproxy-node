@@ -9,6 +9,9 @@ from subprocess import check_call
 if sys.version_info < (3,6):
     sys.exit("node-mitmproxy requires a Python version >= 3.6, but found {}.{}".format(sys.version_info[0], sys.version_info[1]))
 
+# Verify that mitmproxy is installed
+check_call(["mitmdump", "--version"])
+
 # Install dependencies with pip3 first.
 # If pip3 isn't found, use pip.
 try:
