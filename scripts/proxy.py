@@ -88,8 +88,6 @@ class WebSocketAdapter:
         """
         Intercepts an HTTP response. Mutates its headers / body / status code / etc.
         """
-        print("Received a flow!")
-        print(flow.request.url)
         request = flow.request
         response = flow.response
         message_response = self.send_message({
