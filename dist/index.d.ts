@@ -121,7 +121,7 @@ export declare class StashedItem {
  */
 export default class MITMProxy {
     private static _activeProcesses;
-    static Create(cb?: Interceptor): Promise<MITMProxy>;
+    static Create(cb?: Interceptor, quiet?: boolean): Promise<MITMProxy>;
     private static _cleanupCalled;
     private static _cleanup();
     private _stashEnabled;

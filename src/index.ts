@@ -326,7 +326,7 @@ export class StashedItem {
 export default class MITMProxy {
   private static _activeProcesses: ChildProcess[] = [];
 
-  public static async Create(cb: Interceptor = nopInterceptor): Promise<MITMProxy> {
+  public static async Create(cb: Interceptor = nopInterceptor, quiet: boolean = false): Promise<MITMProxy> {
     // Construct WebSocket server, and wait for it to begin listening.
     const wss = new WebSocketServer({ port: 8765 });
     const proxyConnected = new Promise<void>((resolve, reject) => {
@@ -347,12 +347,20 @@ export default class MITMProxy {
 
     try {
       await waitForPort(8080, 1);
-      console.log(`MITMProxy already running.`);
+      if (!quiet) {
+        console.log(`MITMProxy already running.`);
+      }
     } catch (e) {
-      console.log(`MITMProxy not running; starting up mitmproxy.`);
+      if (!quiet) {
+        console.log(`MITMProxy not running; starting up mitmproxy.`);
+      }
       // Start up MITM process.
       // --anticache means to disable caching, which gets in the way of transparently rewriting content.
-      const mitmProcess = spawn("mitmdump", ["--anticache", "-s", resolve(__dirname, "../scripts/proxy.py")], {
+      const options = ["--anticache", "-s", resolve(__dirname, "../scripts/proxy.py")];
+      if (quiet) {
+        options.push('-q');
+      }
+      const mitmProcess = spawn("mitmdump", options, {
         stdio: 'inherit'
       });
       if (MITMProxy._activeProcesses.push(mitmProcess) === 1) {
@@ -475,7 +483,7 @@ export default class MITMProxy {
             statusCode: res.statusCode,
             headers: res.headers,
             body: d
-          });
+          } as HTTPResponse);
         });
         res.once('error', reject);
       });

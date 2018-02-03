@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
-Interception proxy using MITM proxy.
+Interception proxy using mitmproxy (https://mitmproxy.org).
+Communicates to NodeJS via websockets.
 """
 
 import asyncio
