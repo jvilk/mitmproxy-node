@@ -1,13 +1,14 @@
 {
   "name": "mitmproxy",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "description": "NodeJS mitmproxy adapter.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "postinstall": "scripts/install_python_deps.py"
+    "postinstall": "scripts/install_python_deps.py",
+    "prepare": "tsc"
   },
   "repository": {
     "type": "git",

@@ -320,6 +320,10 @@ export class StashedItem {
   }
 }
 
+function defaultStashFilter(url: string, item: StashedItem): boolean {
+  return item.isJavaScript || item.isHtml;
+}
+
 /**
  * Class that launches MITM proxy and talks to it via WebSockets.
  */
@@ -404,6 +408,19 @@ export default class MITMProxy {
   private _wss: WebSocketServer = null;
   public cb: Interceptor;
   private _stash = new Map<string, StashedItem>();
+  private _stashFilter: (url: string, item: StashedItem) => boolean = defaultStashFilter;
+  public get stashFilter(): (url: string, item: StashedItem) => boolean {
+    return this._stashFilter;
+  }
+  public set stashFilter(value: (url: string, item: StashedItem) => boolean) {
+    if (typeof(value) === 'function') {
+      this._stashFilter = value;
+    } else if (value === null) {
+      this._stashFilter = defaultStashFilter;
+    } else {
+      throw new Error(`Invalid stash filter: Expected a function.`);
+    }
+  }
 
   private constructor(cb: Interceptor) {
     this.cb = cb;
@@ -417,8 +434,10 @@ export default class MITMProxy {
         this.cb(original);
         // Remove transfer-encoding. We don't support chunked.
         if (this._stashEnabled) {
-          this._stash.set(original.request.rawUrl,
-            new StashedItem(original.request.rawUrl, original.response.getHeader('content-type'), original.responseBody));
+          const item = new StashedItem(original.request.rawUrl, original.response.getHeader('content-type'), original.responseBody);
+          if (this._stashFilter(original.request.rawUrl, item)) {
+            this._stash.set(original.request.rawUrl, item);
+          }
         }
         ws.send(original.toBuffer());
       });

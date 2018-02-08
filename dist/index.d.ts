@@ -131,6 +131,8 @@ export default class MITMProxy {
     private _wss;
     cb: Interceptor;
     private _stash;
+    private _stashFilter;
+    stashFilter: (url: string, item: StashedItem) => boolean;
     private constructor();
     private _initializeWSS(wss);
     private _initializeMITMProxy(mitmProxy);
