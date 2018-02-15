@@ -3,7 +3,7 @@ import { Url } from 'url';
 /**
  * Function that intercepts and rewrites HTTP responses.
  */
-export declare type Interceptor = (m: InterceptedHTTPMessage) => void;
+export declare type Interceptor = (m: InterceptedHTTPMessage) => void | Promise<void>;
 /**
  * An interceptor that does nothing.
  */

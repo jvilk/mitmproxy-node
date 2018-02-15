@@ -1,4 +1,4 @@
-# mitmproxy-node 1.4.0
+# mitmproxy-node 1.5.0
 
 A bridge between Python's [`mitmproxy`](https://mitmproxy.org/) and Node.JS programs. Rewrite network requests using Node.JS!
 
@@ -38,6 +38,7 @@ import MITMProxy from 'mitmproxy-node';
 
 // Returns Promise<MITMProxy>
 async function makeProxy() {
+  // Note: Your interceptor can also be asynchronous and return a Promise!
   return MITMProxy.Create(function(interceptedMsg) {
     const req = interceptedMsg.request;
     const res = interceptedMsg.response;

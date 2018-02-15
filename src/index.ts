@@ -57,7 +57,7 @@ function waitForPort(port: number, retries: number = 10, interval: number = 500)
 /**
  * Function that intercepts and rewrites HTTP responses.
  */
-export type Interceptor = (m: InterceptedHTTPMessage) => void;
+export type Interceptor = (m: InterceptedHTTPMessage) => void | Promise<void>;
 
 /**
  * An interceptor that does nothing.
@@ -429,9 +429,12 @@ export default class MITMProxy {
   private _initializeWSS(wss: WebSocketServer): void {
     this._wss = wss;
     this._wss.on('connection', (ws) => {
-      ws.on('message', (message: Buffer) => {
+      ws.on('message', async (message: Buffer) => {
         const original = InterceptedHTTPMessage.FromBuffer(message);
-        this.cb(original);
+        const rv = this.cb(original);
+        if (rv && typeof(rv) === 'object' && rv.then) {
+          await rv;
+        }
         // Remove transfer-encoding. We don't support chunked.
         if (this._stashEnabled) {
           const item = new StashedItem(original.request.rawUrl, original.response.getHeader('content-type'), original.responseBody);
