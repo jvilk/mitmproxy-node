@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Interception proxy using mitmproxy (https://mitmproxy.org).
 Communicates to NodeJS via websockets.
