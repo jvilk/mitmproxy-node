@@ -44,6 +44,8 @@ class WebSocketAdapter:
         self.event_loop.run_until_complete(self.websocket_loop())
 
     def __init__(self, intercept_paths = []):
+        if intercept_paths is None:
+            intercept_paths = []
         self.intercept_paths = frozenset(intercept_paths)
         self.event_loop = asyncio.get_event_loop()
         self.queue = queue.Queue()
