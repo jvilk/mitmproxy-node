@@ -4,6 +4,7 @@ Interception proxy using mitmproxy (https://mitmproxy.org).
 Communicates to NodeJS via websockets.
 """
 
+import argparse
 import asyncio
 import queue
 import json
@@ -42,7 +43,8 @@ class WebSocketAdapter:
         """
         self.event_loop.run_until_complete(self.websocket_loop())
 
-    def __init__(self):
+    def __init__(self, intercept_paths = []):
+        self.intercept_paths = frozenset(intercept_paths)
         self.event_loop = asyncio.get_event_loop()
         self.queue = queue.Queue()
         # Start websocket thread
@@ -84,11 +86,46 @@ class WebSocketAdapter:
 
         return (json.loads(all_data[2][0:all_data[0]]), all_data[2][all_data[0]:])
 
+    def request(self, flow):
+        """
+        Intercepts an HTTP request. If the proxy is configured to intercept the path, then
+        do so without sending to the server.
+        """
+        if flow.request.path in self.intercept_paths:
+            request = flow.request
+            message_response = self.send_message({
+                'request': {
+                    'method': request.method,
+                    'url': request.url,
+                    'headers': list(request.headers.items(True))
+                },
+                'response': {
+                    'status_code': 200,
+                    'headers': list()
+                }
+            }, convert_body_to_bytes(request.content), convert_body_to_bytes(None))
+            if message_response is None:
+                # No response received; making no modifications.
+                return
+            new_metadata = message_response[0]
+            new_body = message_response[1]
+
+            flow.response = http.HTTPResponse.make(
+                new_metadata['status_code'],
+                new_body,
+                map(convert_headers_to_bytes, new_metadata['headers'])
+            )
+        return
+
+
     def response(self, flow):
         """
         Intercepts an HTTP response. Mutates its headers / body / status code / etc.
         """
         request = flow.request
+        # Ignore intercepted paths
+        if request.path in self.intercept_paths:
+            return
         response = flow.response
         message_response = self.send_message({
             'request': {
@@ -154,8 +191,11 @@ class WebSocketAdapter:
             except websockets.exceptions.ConnectionClosed:
                 # disconnected from server
                 pass
-            except OSError:
+            except BrokenPipeError:
                 # Connect failed
+                pass
+            except IOError:
+                # disconnected from server mis-transfer
                 pass
             except:
                 print("[mitmproxy-node plugin] Unexpected error:", sys.exc_info())
@@ -165,5 +205,8 @@ def start():
     """
     MITM 'start' hook lets us return an object with hooks defined.
     """
-    wsa = WebSocketAdapter()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--intercept', nargs='*')
+    args = parser.parse_args()
+    wsa = WebSocketAdapter(args.intercept)
     return wsa

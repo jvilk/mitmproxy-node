@@ -121,7 +121,13 @@ export declare class StashedItem {
  */
 export default class MITMProxy {
     private static _activeProcesses;
-    static Create(cb?: Interceptor, quiet?: boolean): Promise<MITMProxy>;
+    /**
+     * Creates a new MITMProxy instance.
+     * @param cb Called with intercepted HTTP requests / responses.
+     * @param interceptPaths List of paths to completely intercept without sending to the server (e.g. ['/eval'])
+     * @param quiet If true, do not print debugging messages (defaults to 'true').
+     */
+    static Create(cb?: Interceptor, interceptPaths?: string[], quiet?: boolean): Promise<MITMProxy>;
     private static _cleanupCalled;
     private static _cleanup();
     private _stashEnabled;

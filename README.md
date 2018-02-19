@@ -1,4 +1,4 @@
-# mitmproxy-node 1.6.0
+# mitmproxy-node 1.7.0
 
 A bridge between Python's [`mitmproxy`](https://mitmproxy.org/) and Node.JS programs. Rewrite network requests using Node.JS!
 
@@ -9,7 +9,7 @@ There are no decent alternatives to mitmproxy, so this package lets me use mitmp
 
 ## What can I use this for?
 
-For transparently rewriting HTTP/HTTPS responses. The mitmproxy plugin lets every HTTP request go through to the server uninhibited, and then passes it to Node.js via a WebSocket for rewriting.
+For transparently rewriting HTTP/HTTPS responses. The mitmproxy plugin lets every HTTP request go through to the server uninhibited, and then passes it to Node.js via a WebSocket for rewriting. You can optionally specify a list of paths that should be directly intercepted without being passed to the server.
 
 If you want to add additional functionality, such as filtering or whatnot, I'll accept pull requests so long as they do not noticeably hinder performance.
 
@@ -45,7 +45,7 @@ async function makeProxy() {
     if (req.rawUrl.contains("target.js") && res.getHeader('content-type').indexOf("javascript") !== -1) {
       interceptedMsg.setResponseBody(Buffer.from(`Hacked!`, 'utf8'));
     }
-  });
+  }, ['/eval'] /* list of paths to directly intercept -- don't send to server */);
 }
 
 async function main() {
@@ -68,7 +68,7 @@ function makeProxy() {
     if (req.rawUrl.contains("target.js") && res.getHeader('content-type').indexOf("javascript") !== -1) {
       interceptedMsg.setResponseBody(Buffer.from(`Hacked!`, 'utf8'));
     }
-  });
+  }, ['/eval']);
 }
 
 function main() {

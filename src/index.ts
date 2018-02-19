@@ -330,7 +330,13 @@ function defaultStashFilter(url: string, item: StashedItem): boolean {
 export default class MITMProxy {
   private static _activeProcesses: ChildProcess[] = [];
 
-  public static async Create(cb: Interceptor = nopInterceptor, quiet: boolean = false): Promise<MITMProxy> {
+  /**
+   * Creates a new MITMProxy instance.
+   * @param cb Called with intercepted HTTP requests / responses.
+   * @param interceptPaths List of paths to completely intercept without sending to the server (e.g. ['/eval'])
+   * @param quiet If true, do not print debugging messages (defaults to 'true').
+   */
+  public static async Create(cb: Interceptor = nopInterceptor, interceptPaths: string[] = [], quiet: boolean = true): Promise<MITMProxy> {
     // Construct WebSocket server, and wait for it to begin listening.
     const wss = new WebSocketServer({ port: 8765 });
     const proxyConnected = new Promise<void>((resolve, reject) => {
@@ -360,7 +366,8 @@ export default class MITMProxy {
       }
       // Start up MITM process.
       // --anticache means to disable caching, which gets in the way of transparently rewriting content.
-      const options = ["--anticache", "-s", resolve(__dirname, "../scripts/proxy.py")];
+      const scriptArgs = interceptPaths.length > 0 ? ` --intercept ${interceptPaths.join(" ")}` : "";
+      const options = ["--anticache", "-s", resolve(__dirname, `../scripts/proxy.py${scriptArgs}`)];
       if (quiet) {
         options.push('-q');
       }
