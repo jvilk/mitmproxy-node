@@ -1,6 +1,6 @@
 {
   "name": "mitmproxy",
-  "version": "1.7.1",
+  "version": "2.0.0",
   "description": "NodeJS mitmproxy adapter.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

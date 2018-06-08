@@ -9,10 +9,12 @@ import asyncio
 import queue
 import json
 import threading
+import typing
 import traceback
 import sys
 import struct
 import websockets
+from mitmproxy import ctx
 from mitmproxy import http
 
 def convert_headers_to_bytes(header_entry):
@@ -41,16 +43,28 @@ class WebSocketAdapter:
         Main function of the websocket thread. Runs the websocket event loop
         until MITMProxy shuts down.
         """
-        self.event_loop.run_until_complete(self.websocket_loop())
+        asyncio.new_event_loop().run_until_complete(self.websocket_loop())
 
-    def __init__(self, intercept_paths = []):
-        if intercept_paths is None:
-            intercept_paths = []
-        self.intercept_paths = frozenset(intercept_paths)
-        self.event_loop = asyncio.get_event_loop()
+    def __init__(self):
         self.queue = queue.Queue()
+        self.intercept_paths = frozenset([])
         # Start websocket thread
         threading.Thread(target=self.websocket_thread).start()
+
+    def load(self, loader):
+        loader.add_option(
+            "intercept", str, "",
+            """
+            A list of HTTP paths, delimited by a comma, to intercept and pass to Node without hitting the server.
+            E.g.: /foo,/bar
+            """
+        )
+        return
+
+    def configure(self, updates):
+        if "intercept" in updates:
+            self.intercept_paths = frozenset(ctx.options.intercept.split(","))
+        return
 
     def send_message(self, metadata, data1, data2):
         """
@@ -125,6 +139,7 @@ class WebSocketAdapter:
         Intercepts an HTTP response. Mutates its headers / body / status code / etc.
         """
         request = flow.request
+
         # Ignore intercepted paths
         if request.path in self.intercept_paths:
             return
@@ -203,12 +218,6 @@ class WebSocketAdapter:
                 print("[mitmproxy-node plugin] Unexpected error:", sys.exc_info())
                 traceback.print_exc(file=sys.stdout)
 
-def start():
-    """
-    MITM 'start' hook lets us return an object with hooks defined.
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--intercept', nargs='*')
-    args = parser.parse_args()
-    wsa = WebSocketAdapter(args.intercept)
-    return wsa
+addons = [
+    WebSocketAdapter()
+]

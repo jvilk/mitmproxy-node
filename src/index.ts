@@ -366,8 +366,8 @@ export default class MITMProxy {
       }
       // Start up MITM process.
       // --anticache means to disable caching, which gets in the way of transparently rewriting content.
-      const scriptArgs = interceptPaths.length > 0 ? ` --intercept ${interceptPaths.join(" ")}` : "";
-      const options = ["--anticache", "-s", resolve(__dirname, `../scripts/proxy.py${scriptArgs}`)];
+      const scriptArgs = interceptPaths.length > 0 ? ["--set", `intercept=${interceptPaths.join(",")}`] : [];
+      const options = ["--anticache", "-s", resolve(__dirname, `../scripts/proxy.py`)].concat(scriptArgs);
       if (quiet) {
         options.push('-q');
       }

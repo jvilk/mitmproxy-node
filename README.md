@@ -1,4 +1,4 @@
-# mitmproxy-node 1.7.1
+# mitmproxy-node 2.0.0
 
 A bridge between Python's [`mitmproxy`](https://mitmproxy.org/) and Node.JS programs. Rewrite network requests using Node.JS!
 
@@ -23,7 +23,7 @@ I have no idea what I am doing. PRs to improve my Python code are appreciated!
 
 ## Pre-requisites
 
-* [`mitmproxy`](https://mitmproxy.org/) must be installed and runnable from the terminal. Tested with 2.0.2.
+* [`mitmproxy` V4](https://mitmproxy.org/) must be installed and runnable from the terminal.
 * Python 3.6, since I use the new async/await syntax in the mitmproxy plugin
 * `npm install` to pull in Node and PIP dependencies.
 
@@ -45,7 +45,7 @@ async function makeProxy() {
     if (req.rawUrl.contains("target.js") && res.getHeader('content-type').indexOf("javascript") !== -1) {
       interceptedMsg.setResponseBody(Buffer.from(`Hacked!`, 'utf8'));
     }
-  }, ['/eval'] /* list of paths to directly intercept -- don't send to server */);
+  }, ['/eval'] /* list of paths to directly intercept -- don't send to server */, false /* If true, enables CORS on all requests (default is false) */);
 }
 
 async function main() {
