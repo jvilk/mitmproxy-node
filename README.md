@@ -45,7 +45,7 @@ async function makeProxy() {
     if (req.rawUrl.contains("target.js") && res.getHeader('content-type').indexOf("javascript") !== -1) {
       interceptedMsg.setResponseBody(Buffer.from(`Hacked!`, 'utf8'));
     }
-  }, ['/eval'] /* list of paths to directly intercept -- don't send to server */, false /* If true, enables CORS on all requests (default is false) */);
+  }, ['/eval'] /* list of paths to directly intercept -- don't send to server */);
 }
 
 async function main() {
