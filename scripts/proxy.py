@@ -43,11 +43,13 @@ class WebSocketAdapter:
         Main function of the websocket thread. Runs the websocket event loop
         until MITMProxy shuts down.
         """
-        asyncio.new_event_loop().run_until_complete(self.websocket_loop())
+        self.worker_event_loop = asyncio.new_event_loop()
+        self.worker_event_loop.run_until_complete(self.websocket_loop())
 
     def __init__(self):
         self.queue = queue.Queue()
         self.intercept_paths = frozenset([])
+        self.finished = False
         # Start websocket thread
         threading.Thread(target=self.websocket_thread).start()
 
@@ -178,6 +180,7 @@ class WebSocketAdapter:
         Called when MITMProxy is shutting down.
         """
         # Tell the WebSocket loop to stop processing events
+        self.finished = True
         self.queue.put(None)
         return
 
@@ -185,7 +188,7 @@ class WebSocketAdapter:
         """
         Processes messages from self.queue until mitmproxy shuts us down.
         """
-        while True:
+        while not self.finished:
             try:
                 async with websockets.connect('ws://localhost:8765', max_size = None) as websocket:
                     while True:

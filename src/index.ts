@@ -532,11 +532,11 @@ export default class MITMProxy {
         });
       };
 
-      if (this._mitmProcess && this._mitmProcess.connected) {
+      if (this._mitmProcess && !this._mitmProcess.killed) {
         this._mitmProcess.once('exit', (code, signal) => {
           closeWSS();
         });
-        this._mitmProcess.kill();
+        this._mitmProcess.kill('SIGTERM');
       } else {
         closeWSS();
       }
