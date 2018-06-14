@@ -356,33 +356,52 @@ export default class MITMProxy {
     });
 
     try {
-      await waitForPort(8080, 1);
-      if (!quiet) {
-        console.log(`MITMProxy already running.`);
+      try {
+        await waitForPort(8080, 1);
+        if (!quiet) {
+          console.log(`MITMProxy already running.`);
+        }
+      } catch (e) {
+        if (!quiet) {
+          console.log(`MITMProxy not running; starting up mitmproxy.`);
+        }
+        // Start up MITM process.
+        // --anticache means to disable caching, which gets in the way of transparently rewriting content.
+        const scriptArgs = interceptPaths.length > 0 ? ["--set", `intercept=${interceptPaths.join(",")}`] : [];
+        const options = ["--anticache", "-s", resolve(__dirname, `../scripts/proxy.py`)].concat(scriptArgs);
+        if (quiet) {
+          options.push('-q');
+        }
+        const mitmProcess = spawn("mitmdump", options, {
+          stdio: 'inherit'
+        });
+        const mitmProxyExited = new Promise<void>((_, reject) => {
+          mitmProcess.once('error', reject);
+          mitmProcess.once('exit', reject);
+        });
+        if (MITMProxy._activeProcesses.push(mitmProcess) === 1) {
+          process.on('SIGINT', MITMProxy._cleanup);
+          process.on('exit', MITMProxy._cleanup);
+        }
+        mp._initializeMITMProxy(mitmProcess);
+        // Wait for port 8080 to come online.
+        const waitingForPort = waitForPort(8080);
+        try {
+          // Fails if mitmproxy exits before port becomes available.
+          await Promise.race([mitmProxyExited, waitingForPort]);
+        } catch (e) {
+          if (e && typeof(e) === 'object' && e.code === "ENOENT") {
+            throw new Error(`mitmdump, which is an executable that ships with mitmproxy, is not on your PATH. Please ensure that you can run mitmdump --version successfully from your command line.`)
+          } else {
+            throw new Error(`Unable to start mitmproxy: ${e}`);
+          }
+        }
       }
+      await proxyConnected;
     } catch (e) {
-      if (!quiet) {
-        console.log(`MITMProxy not running; starting up mitmproxy.`);
-      }
-      // Start up MITM process.
-      // --anticache means to disable caching, which gets in the way of transparently rewriting content.
-      const scriptArgs = interceptPaths.length > 0 ? ["--set", `intercept=${interceptPaths.join(",")}`] : [];
-      const options = ["--anticache", "-s", resolve(__dirname, `../scripts/proxy.py`)].concat(scriptArgs);
-      if (quiet) {
-        options.push('-q');
-      }
-      const mitmProcess = spawn("mitmdump", options, {
-        stdio: 'inherit'
-      });
-      if (MITMProxy._activeProcesses.push(mitmProcess) === 1) {
-        process.on('SIGINT', MITMProxy._cleanup);
-        process.on('exit', MITMProxy._cleanup);
-      }
-      mp._initializeMITMProxy(mitmProcess);
-      // Wait for port 8080 to come online.
-      await waitForPort(8080);
+      await new Promise<any>((resolve) => wss.close(resolve));
+      throw e;
     }
-    await proxyConnected;
 
     return mp;
   }
