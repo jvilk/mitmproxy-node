@@ -455,6 +455,11 @@ export default class MITMProxy {
   private _initializeWSS(wss: WebSocketServer): void {
     this._wss = wss;
     this._wss.on('connection', (ws) => {
+      ws.on('error', (e) => {
+        if ((e as any).code !== "ECONNRESET") {
+          console.log(`WebSocket error: ${e}`);
+        }
+      });
       ws.on('message', async (message: Buffer) => {
         const original = InterceptedHTTPMessage.FromBuffer(message);
         const rv = this.cb(original);
