@@ -12,7 +12,8 @@ if sys.version_info < (3,6):
 # Verify that mitmproxy is installed
 try:
     mitmdump_output = str(check_output(["mitmdump", "--version"]))
-    version = mitmdump_output.split("\n")[0].split(" ")[1].split('.')
+    version = mitmdump_output.split("\\n")[0].split(" ")[1].split('.')
+    print(version)
     version[0] = int(version[0])
     version[1] = int(version[1])
     version[2] = int(version[2])

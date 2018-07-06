@@ -32,6 +32,13 @@ def convert_body_to_bytes(body):
     else:
         return body
 
+def is_text_response(headers):
+    if hasattr(headers, 'content-type'):
+        ct = headers['content-type'].lower()
+        # Allow all application/ and text/ MIME types.
+        return 'application' in ct or 'text' in ct
+    return True
+
 class WebSocketAdapter:
     """
     Relays HTTP/HTTPS requests to a websocket server.
@@ -49,6 +56,7 @@ class WebSocketAdapter:
     def __init__(self):
         self.queue = queue.Queue()
         self.intercept_paths = frozenset([])
+        self.only_intercept_text_files = False;
         self.finished = False
         # Start websocket thread
         threading.Thread(target=self.websocket_thread).start()
@@ -61,11 +69,23 @@ class WebSocketAdapter:
             E.g.: /foo,/bar
             """
         )
+        loader.add_option(
+            name = "onlyInterceptTextFiles",
+            typespec = bool,
+            default = False,
+            help = "If true, the plugin only intercepts text files and passes through other types of files",
+        )
         return
 
     def configure(self, updates):
         if "intercept" in updates:
             self.intercept_paths = frozenset(ctx.options.intercept.split(","))
+            print("Intercept paths:")
+            print(self.intercept_paths)
+        if "onlyInterceptTextFiles" in updates:
+            self.only_intercept_text_files = ctx.options.onlyInterceptTextFiles
+            print("Only intercept text files:")
+            print(self.only_intercept_text_files)
         return
 
     def send_message(self, metadata, data1, data2):
@@ -135,11 +155,19 @@ class WebSocketAdapter:
             )
         return
 
+    def responseheaders(self, flow):
+        # Stream all non-text responses if only_intercept_text_files is enabled.
+        # Do not stream intercepted paths.
+        flow.response.stream = flow.request.path not in self.intercept_paths and self.only_intercept_text_files and not is_text_response(flow.response.headers)
 
     def response(self, flow):
         """
         Intercepts an HTTP response. Mutates its headers / body / status code / etc.
         """
+        # Streaming responses are things we said to stream in responseheaders
+        if flow.response.stream:
+            return
+
         request = flow.request
 
         # Ignore intercepted paths

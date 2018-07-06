@@ -335,8 +335,9 @@ export default class MITMProxy {
    * @param cb Called with intercepted HTTP requests / responses.
    * @param interceptPaths List of paths to completely intercept without sending to the server (e.g. ['/eval'])
    * @param quiet If true, do not print debugging messages (defaults to 'true').
+   * @param onlyInterceptTextFiles If true, only intercept text files (JavaScript/HTML/CSS/etc, and ignore media files).
    */
-  public static async Create(cb: Interceptor = nopInterceptor, interceptPaths: string[] = [], quiet: boolean = true): Promise<MITMProxy> {
+  public static async Create(cb: Interceptor = nopInterceptor, interceptPaths: string[] = [], quiet: boolean = true, onlyInterceptTextFiles = false, ignoreHosts: string | null = null): Promise<MITMProxy> {
     // Construct WebSocket server, and wait for it to begin listening.
     const wss = new WebSocketServer({ port: 8765 });
     const proxyConnected = new Promise<void>((resolve, reject) => {
@@ -344,7 +345,7 @@ export default class MITMProxy {
         resolve();
       });
     });
-    const mp = new MITMProxy(cb);
+    const mp = new MITMProxy(cb, onlyInterceptTextFiles);
     // Set up WSS callbacks before MITMProxy connects.
     mp._initializeWSS(wss);
     await new Promise<void>((resolve, reject) => {
@@ -368,6 +369,11 @@ export default class MITMProxy {
         // Start up MITM process.
         // --anticache means to disable caching, which gets in the way of transparently rewriting content.
         const scriptArgs = interceptPaths.length > 0 ? ["--set", `intercept=${interceptPaths.join(",")}`] : [];
+        scriptArgs.push("--set", `onlyInterceptTextFiles=${onlyInterceptTextFiles}`);
+        if (ignoreHosts) {
+          scriptArgs.push(`--ignore-hosts`, ignoreHosts);
+        }
+
         const options = ["--anticache", "-s", resolve(__dirname, `../scripts/proxy.py`)].concat(scriptArgs);
         if (quiet) {
           options.push('-q');
@@ -433,6 +439,7 @@ export default class MITMProxy {
   private _mitmError: Error = null;
   private _wss: WebSocketServer = null;
   public cb: Interceptor;
+  public readonly onlyInterceptTextFiles: boolean;
   private _stash = new Map<string, StashedItem>();
   private _stashFilter: (url: string, item: StashedItem) => boolean = defaultStashFilter;
   public get stashFilter(): (url: string, item: StashedItem) => boolean {
@@ -448,8 +455,9 @@ export default class MITMProxy {
     }
   }
 
-  private constructor(cb: Interceptor) {
+  private constructor(cb: Interceptor, onlyInterceptTextFiles: boolean) {
     this.cb = cb;
+    this.onlyInterceptTextFiles = onlyInterceptTextFiles;
   }
 
   private _initializeWSS(wss: WebSocketServer): void {

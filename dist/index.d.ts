@@ -126,8 +126,9 @@ export default class MITMProxy {
      * @param cb Called with intercepted HTTP requests / responses.
      * @param interceptPaths List of paths to completely intercept without sending to the server (e.g. ['/eval'])
      * @param quiet If true, do not print debugging messages (defaults to 'true').
+     * @param onlyInterceptTextFiles If true, only intercept text files (JavaScript/HTML/CSS/etc, and ignore media files).
      */
-    static Create(cb?: Interceptor, interceptPaths?: string[], quiet?: boolean): Promise<MITMProxy>;
+    static Create(cb?: Interceptor, interceptPaths?: string[], quiet?: boolean, onlyInterceptTextFiles?: boolean, ignoreHosts?: string | null): Promise<MITMProxy>;
     private static _cleanupCalled;
     private static _cleanup();
     private _stashEnabled;
@@ -136,6 +137,7 @@ export default class MITMProxy {
     private _mitmError;
     private _wss;
     cb: Interceptor;
+    readonly onlyInterceptTextFiles: boolean;
     private _stash;
     private _stashFilter;
     stashFilter: (url: string, item: StashedItem) => boolean;
