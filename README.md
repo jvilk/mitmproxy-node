@@ -45,7 +45,10 @@ async function makeProxy() {
     if (req.rawUrl.contains("target.js") && res.getHeader('content-type').indexOf("javascript") !== -1) {
       interceptedMsg.setResponseBody(Buffer.from(`Hacked!`, 'utf8'));
     }
-  }, ['/eval'] /* list of paths to directly intercept -- don't send to server */);
+  }, ['/eval'] /* list of paths to directly intercept -- don't send to server */,
+  true /* Be quiet; turn off for debug messages */,
+  true /* Only intercept text or potentially-text requests (all mime types with *application* and *text* in them, plus responses with no mime type) */
+  );
 }
 
 async function main() {
@@ -68,7 +71,7 @@ function makeProxy() {
     if (req.rawUrl.contains("target.js") && res.getHeader('content-type').indexOf("javascript") !== -1) {
       interceptedMsg.setResponseBody(Buffer.from(`Hacked!`, 'utf8'));
     }
-  }, ['/eval']);
+  }, ['/eval'], true, true);
 }
 
 function main() {
