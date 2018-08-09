@@ -21,7 +21,7 @@
     "man-in-the-middle",
     "transparent"
   ],
-  "author": "John Vilk <jvilk@cs.umass.edu>",
+  "author": "John Vilk <jvilk@jvilk.com>",
   "license": "MIT",
   "homepage": "https://github.com/jvilk/mitmproxy-node",
   "dependencies": {
