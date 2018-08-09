@@ -33,10 +33,10 @@ def convert_body_to_bytes(body):
         return body
 
 def is_text_response(headers):
-    if hasattr(headers, 'content-type'):
+    if 'content-type' in headers:
         ct = headers['content-type'].lower()
         # Allow all application/ and text/ MIME types.
-        return 'application' in ct or 'text' in ct
+        return 'application' in ct or 'text' in ct or ct.strip() == ""
     return True
 
 class WebSocketAdapter:
@@ -56,7 +56,7 @@ class WebSocketAdapter:
     def __init__(self):
         self.queue = queue.Queue()
         self.intercept_paths = frozenset([])
-        self.only_intercept_text_files = False;
+        self.only_intercept_text_files = False
         self.finished = False
         # Start websocket thread
         threading.Thread(target=self.websocket_thread).start()
@@ -80,12 +80,12 @@ class WebSocketAdapter:
     def configure(self, updates):
         if "intercept" in updates:
             self.intercept_paths = frozenset(ctx.options.intercept.split(","))
-            print("Intercept paths:")
-            print(self.intercept_paths)
+            #print("Intercept paths:")
+            #print(self.intercept_paths)
         if "onlyInterceptTextFiles" in updates:
             self.only_intercept_text_files = ctx.options.onlyInterceptTextFiles
-            print("Only intercept text files:")
-            print(self.only_intercept_text_files)
+            #print("Only intercept text files:")
+            #print(self.only_intercept_text_files)
         return
 
     def send_message(self, metadata, data1, data2):
