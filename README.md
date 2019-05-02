@@ -1,4 +1,4 @@
-# mitmproxy-node 2.1.0
+# mitmproxy-node 2.1.1
 
 A bridge between Python's [`mitmproxy`](https://mitmproxy.org/) and Node.JS programs. Rewrite network requests using Node.JS!
 
