@@ -23,7 +23,7 @@ I have no idea what I am doing. PRs to improve my Python code are appreciated!
 
 ## Pre-requisites
 
-* [`mitmproxy` V4](https://mitmproxy.org/) must be installed and runnable from the terminal.
+* [`mitmproxy` V4](https://mitmproxy.org/) must be installed and runnable from the terminal. The install method cannot be a prebuilt binary or homebrew, since those packages are missing the Python websockets module. Install via `pip` or from source.
 * Python 3.6, since I use the new async/await syntax in the mitmproxy plugin
 * `npm install` to pull in Node and PIP dependencies.
 
