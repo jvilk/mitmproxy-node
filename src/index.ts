@@ -378,6 +378,10 @@ export default class MITMProxy {
         if (quiet) {
           options.push('-q');
         }
+        
+        // allow self-signed SSL certificates
+        options.push("--ssl-insecure");
+        
         const mitmProcess = spawn("mitmdump", options, {
           stdio: 'inherit'
         });
