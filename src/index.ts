@@ -272,6 +272,14 @@ export class InterceptedHTTPMessage {
     this.response.setHeader('content-length', `${b.length}`);
     // TODO: Content-encoding?
   }
+  
+  /**
+   * Changes the status code of the HTTP response.
+   * @param code The new status code.
+   */
+  public setStatusCode(code: number) {
+    this.response.statusCode = code;
+  }
 
   /**
    * Pack into a buffer for transmission to MITMProxy.
