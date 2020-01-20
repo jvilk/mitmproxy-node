@@ -103,6 +103,11 @@ export declare class InterceptedHTTPMessage {
      */
     setResponseBody(b: Buffer): void;
     /**
+     * Changes the status code of the HTTP response.
+     * @param code The new status code.
+     */
+    setStatusCode(code: number): void;
+    /**
      * Pack into a buffer for transmission to MITMProxy.
      */
     toBuffer(): Buffer;
