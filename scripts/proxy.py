@@ -148,7 +148,7 @@ class WebSocketAdapter:
             new_metadata = message_response[0]
             new_body = message_response[1]
 
-            flow.response = http.HTTPResponse.make(
+            flow.response = http.Response.make(
                 new_metadata['status_code'],
                 new_body,
                 map(convert_headers_to_bytes, new_metadata['headers'])
@@ -196,7 +196,7 @@ class WebSocketAdapter:
 
         #print("Prepping response!")
 
-        flow.response = http.HTTPResponse.make(
+        flow.response = http.Response.make(
             new_metadata['status_code'],
             new_body,
             map(convert_headers_to_bytes, new_metadata['headers'])
